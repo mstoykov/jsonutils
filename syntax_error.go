@@ -4,9 +4,13 @@ import (
 	"bytes"
 	"encoding/json"
 	"strconv"
+	"strings"
 )
 
-const newline = '\n'
+const (
+	newline  = '\n'
+	emptyMsg = `in no json`
+)
 
 // SyntaxError wraps around json.SyntaxError to provide better context by it's
 // Error().The original error is available through the method Original
@@ -30,6 +34,15 @@ func (s *SyntaxError) Original() *json.SyntaxError {
 //
 // Notice: in the message all the tabs are replaced by a single space
 func NewSyntaxError(original *json.SyntaxError, jsonContents []byte, contextSize int64) *SyntaxError {
+	if len(jsonContents) == 0 {
+		return &SyntaxError{
+			original: original,
+			// replace the tabs so that the offset is correct
+			msg: strings.Join(
+				[]string{"with no json contents got :", original.Error()}, ""),
+		}
+	}
+
 	context, offsetOnLine, nextLineOffset := getContextAroundOffset(jsonContents, original.Offset, contextSize)
 
 	var errorShowingLineBuffer = make([][]byte, 0, 9)
