@@ -48,7 +48,7 @@ func NewSyntaxError(original *json.SyntaxError, jsonContents []byte, contextSize
 	var errorShowingLineBuffer = make([][]byte, 0, 9)
 	errorShowingLineBuffer = append(errorShowingLineBuffer, replaceTabsWithSpace(context[:nextLineOffset]))
 	errorShowingLineBuffer = append(errorShowingLineBuffer, []byte{newline})
-	if offsetOnLine > 0 {
+	if offsetOnLine > 2 {
 		errorShowingLineBuffer = append(errorShowingLineBuffer, bytes.Repeat([]byte{'-'}, int(offsetOnLine-2)))
 	}
 	var lineNumber = bytes.Count(jsonContents[:original.Offset], []byte{newline}) + 1
@@ -84,8 +84,8 @@ func getContextAroundOffset(contents []byte, offset, lines int64) (context []byt
 	var end = getOffsetXLineForward(contents[offset:], 1) + offset
 	// correct lineOffset for the context
 	lineOffset = end - start
-	end = getOffsetXLineForward(contents[end+1:], lines) + end
-	context = contents[start : end+1]
+	end = getOffsetXLineForward(contents[min(len(contents), int(end+1)):], lines) + end
+	context = contents[start:min(len(contents), int(end+1))]
 	return
 }
 
@@ -110,4 +110,11 @@ func getOffsetXLineForward(contents []byte, lines int64) (offset int64) {
 		offset = int64(len(contents))
 	}
 	return
+}
+
+func min(l, r int) int {
+	if l > r {
+		return r
+	}
+	return l
 }
