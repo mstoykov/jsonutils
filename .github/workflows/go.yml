@@ -10,7 +10,7 @@ jobs:
         go: ['1.10' , '1.11' , '1.12']
         os: [ubuntu, windows, macOS]
     steps:
-     
+
     - name: Set up Go ${{ matrix.go }}
       uses: actions/setup-go@v1
       with:
@@ -22,15 +22,15 @@ jobs:
 
     - name: Get dependencies
       run: go get -v -t -d ./...
-       
+
     - name: Build
       run: go build -v .
-      
+
     - name: Test
       run: go test -p 1 -race -v ./... -coverprofile=coverage.txt --coverpkg="$(go list ./... | tr '\n' ',')"
-    
+
     - name: Upload coverage
-      uses: codecov/codecov-action@v1.0.0
+      uses: codecov/codecov-action@v1.0.4
       with:
         token: ${{secrets.CODECOV_TOKEN}}
         file: ./coverage.txt
